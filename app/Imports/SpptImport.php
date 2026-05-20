@@ -3,7 +3,6 @@
 namespace App\Imports;
 
 use App\Models\Sppt;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -12,13 +11,17 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class SpptImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure, ShouldQueue
+class SpptImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure
 {
     use Importable;
     use SkipsFailures;
 
+    protected int $rowCount = 0;
+
     public function model(array $row)
     {
+        $this->rowCount++;
+
         return Sppt::updateOrCreate([
             'id_sppt' => $row['id_sppt'],
         ], [
@@ -29,6 +32,11 @@ class SpptImport implements ToModel, WithHeadingRow, WithChunkReading, WithValid
             'pajak_terhutang' => $row['pajak_terhutang'] ?? 0,
             'status_bayar' => $row['status_bayar'] ?? 'piutang',
         ]);
+    }
+
+    public function getRowCount(): int
+    {
+        return $this->rowCount;
     }
 
     public function chunkSize(): int

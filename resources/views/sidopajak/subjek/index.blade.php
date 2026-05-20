@@ -28,6 +28,10 @@
                     <div class="rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3">
                         {{ session('success') }}</div>
                 @endif
+                @if (session('error'))
+                    <div class="rounded-lg bg-red-50 border border-red-200 text-red-700 px-4 py-3">
+                        {{ session('error') }}</div>
+                @endif
 
                 <div class="space-y-4">
                     <form action="{{ route('subjek-pajak.index') }}" method="GET"

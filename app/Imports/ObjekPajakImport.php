@@ -3,7 +3,6 @@
 namespace App\Imports;
 
 use App\Models\ObjekPajak;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -12,13 +11,17 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ObjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure, ShouldQueue
+class ObjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure
 {
     use Importable;
     use SkipsFailures;
 
+    protected int $rowCount = 0;
+
     public function model(array $row)
     {
+        $this->rowCount++;
+
         return ObjekPajak::updateOrCreate([
             'nop' => $row['nop'],
         ], [
@@ -30,6 +33,11 @@ class ObjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, Wit
         ]);
     }
 
+    public function getRowCount(): int
+    {
+        return $this->rowCount;
+    }
+
     public function chunkSize(): int
     {
         return 1000;
@@ -39,7 +47,7 @@ class ObjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, Wit
     {
         return [
             'nop' => ['required', 'string', 'max:32'],
-            'nik_pemilik' => ['required', 'string', 'max:20', 'exists:subjek_pajak,nik'],
+            'nik_pemilik' => ['required', 'max:20', 'exists:subjek_pajak,nik'],
             'letak_objek' => ['required', 'string'],
             'luas_bumi' => ['nullable', 'numeric'],
             'luas_bangunan' => ['nullable', 'numeric'],

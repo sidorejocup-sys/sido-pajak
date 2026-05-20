@@ -87,9 +87,18 @@ class SubjekPajakController extends Controller
 
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv']]);
 
-        (new SubjekPajakImport())->queue($request->file('file'));
+        $import = new SubjekPajakImport();
+        $import->import($request->file('file'));
 
-        return back()->with('success', 'Impor dijadwalkan. Proses berjalan di background (queue).');
+        if ($import->failures()->isNotEmpty()) {
+            return back()->with('error', 'Beberapa baris gagal diimpor. Periksa format file dan coba lagi.');
+        }
+
+        if ($import->getRowCount() === 0) {
+            return back()->with('error', 'Tidak ada baris valid yang diimpor. Pastikan file menggunakan header template yang benar.');
+        }
+
+        return back()->with('success', "Impor berhasil. {$import->getRowCount()} baris diproses.");
     }
 
     public function export()

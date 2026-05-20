@@ -3,7 +3,6 @@
 namespace App\Imports;
 
 use App\Models\SubjekPajak;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -12,13 +11,17 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class SubjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure, ShouldQueue
+class SubjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure
 {
     use Importable;
     use SkipsFailures;
 
+    protected int $rowCount = 0;
+
     public function model(array $row)
     {
+        $this->rowCount++;
+
         return SubjekPajak::updateOrCreate([
             'nik' => $row['nik'],
         ], [
@@ -30,6 +33,11 @@ class SubjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
         ]);
     }
 
+    public function getRowCount(): int
+    {
+        return $this->rowCount;
+    }
+
     public function chunkSize(): int
     {
         return 1000;
@@ -38,7 +46,7 @@ class SubjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, Wi
     public function rules(): array
     {
         return [
-            'nik' => ['required', 'string', 'max:20'],
+            'nik' => ['required', 'max:20'],
             'nama' => ['required', 'string', 'max:255'],
             'alamat' => ['nullable', 'string'],
             'rt' => ['nullable', 'string', 'max:5'],

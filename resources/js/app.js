@@ -58,14 +58,15 @@ function setupUploadProgress() {
                 if (xhr.status >= 200 && xhr.status < 300) {
                     if (statusText) {
                         statusText.textContent =
-                            "Unggah selesai. Impor dijadwalkan.";
+                            "Unggah selesai. Impor berhasil.";
                     }
                     if (progressBar) {
                         progressBar.style.width = "100%";
                     }
-                    if (xhr.responseURL) {
-                        window.location.href = xhr.responseURL;
-                    }
+                    // Reload page after 1.5 seconds to show success message
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
                 } else {
                     if (statusText) {
                         statusText.textContent =
