@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\ObjekPajak;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Maatwebsite\Excel\Concerns\Importable;
 use Maatwebsite\Excel\Concerns\SkipsFailures;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -11,7 +12,7 @@ use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class ObjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure
+class ObjekPajakImport implements ToModel, WithHeadingRow, WithChunkReading, WithValidation, SkipsOnFailure, ShouldQueue
 {
     use Importable;
     use SkipsFailures;

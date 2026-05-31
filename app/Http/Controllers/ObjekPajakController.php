@@ -10,6 +10,7 @@ use App\Models\SubjekPajak;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -87,20 +88,13 @@ class ObjekPajakController extends Controller
     {
         $this->authorize('import', ObjekPajak::class);
 
-        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv']]);
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:20480']]);
 
-        $import = new ObjekPajakImport();
-        $import->import($request->file('file'));
+        Storage::disk('local')->makeDirectory('imports');
+        $path = $request->file('file')->store('imports');
+        Excel::queueImport(new ObjekPajakImport(), $path, 'local');
 
-        if ($import->failures()->isNotEmpty()) {
-            return back()->with('error', 'Beberapa baris gagal diimpor. Periksa format file dan coba lagi.');
-        }
-
-        if ($import->getRowCount() === 0) {
-            return back()->with('error', 'Tidak ada baris valid yang diimpor. Pastikan file menggunakan header template yang benar.');
-        }
-
-        return back()->with('success', "Impor berhasil. {$import->getRowCount()} baris diproses.");
+        return back()->with('success', 'Impor file telah dijadwalkan. Worker akan memprosesnya dalam beberapa saat.');
     }
 
     public function export()
